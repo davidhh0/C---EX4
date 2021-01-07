@@ -137,7 +137,7 @@ void print_trie(node *Node, char *String) {
             *(String + letterCount) = Node->children[j]->letter;
             letterCount += 1;
             if (Node->children[j]->endOfWord) {
-                printf("%.*s\t%d\n", letterCount, String, Node->children[j]->endOfWordCount);
+                printf("%.*s %d\n", letterCount, String, Node->children[j]->endOfWordCount);
                 Node->children[j]->endOfWord = 0;
                 char *newString = (char *) malloc(sizeof(char) * (letterCount - 1));
                 //strcpy(newString,String);
@@ -169,7 +169,7 @@ void print_trie_r(node *Node, char *String) {
             *(String + letterCount) = Node->children[j]->letter;
             letterCount += 1;
             if (Node->children[j]->endOfWord) {
-                printf("%.*s\t%d\n", letterCount, String, Node->children[j]->endOfWordCount);
+                printf("%.*s %d\n", letterCount, String, Node->children[j]->endOfWordCount);
                 Node->children[j]->endOfWord = 0;
                 char *newString = (char *) malloc(sizeof(char) * (letterCount - 1));
                 //strcpy(newString,String);
