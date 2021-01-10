@@ -3,11 +3,6 @@
 #include <string.h>
 
 #define NUM_LETTERS 26
-#define MAX_WORDS 250
-#define WORD 30
-#define LINE 250
-
-int wordCount = 0;
 int letterCount = 0;
 
 typedef struct node {
@@ -20,22 +15,33 @@ typedef struct node {
 node *rootNode;
 node *newNode;
 
+int MAX=0;
+int MAXcounterForWord=0;
+
 char letter_to_lower(char c);
 
 void insert_to_trie(char c);
 
-void print_trie(node *Node, char *String);
+void print_trie(node *Node, char[MAX] , int );
 
-void print_trie_r(node *Node, char *String);
+void print_trie_r(node *Node, char[MAX] , int);
+
+void free_mem(node **Node);
+
+void ifree(node *root);
 
 
 int main(int argc, char **argv) {
 
     char c;
     int i;
-    newNode = (node *) malloc(sizeof(node));
+    newNode = (node *) malloc(sizeof(node)*1);
+    if (newNode == NULL){
+    	printf("Error allocating memory! \n");
+    	exit(1);
+    }
     rootNode = newNode;
-
+    
     for (i = 0; i <= NUM_LETTERS; ++i) {
         newNode->children[i] = NULL;
     }
@@ -58,19 +64,24 @@ int main(int argc, char **argv) {
         insert_to_trie(c);
     } while (1);
 
-    char *String = (char *) malloc(sizeof(char));
-    if (argc >1){
-    	if (!strcmp(argv[1],"r")){
-    	print_trie_r(rootNode, String);	
-    	}
+    char David[MAX];
 
+
+    if (argc > 1) {
+        if (!strcmp(argv[1], "r")) {
+            print_trie_r(rootNode, David,0);
+        }
+
+    } else {
+        print_trie(rootNode, David , 0);
     }
-    else{
-        print_trie (rootNode, String);
-    }
+
+
+    free_mem(&rootNode);
+
+
+
     return 0;
-
-
 
 
 }
@@ -94,9 +105,9 @@ char letter_to_lower(char c) {
 void insert_to_trie(char c) {
 
     int numOfchar = c - 97;
-    if (c == '~')
+    if (c == '~') {
         return;
-
+    }
     if (c == ' ') {
         if (newNode->endOfWord) {
             newNode->endOfWordCount += 1;
@@ -104,14 +115,23 @@ void insert_to_trie(char c) {
             newNode->endOfWord = 1;
             newNode->endOfWordCount += 1;
         }
+        if(MAXcounterForWord > MAX){
+            MAX = MAXcounterForWord;
+        }
+        MAXcounterForWord=0;
         newNode = rootNode;
         return;
     }
     if (newNode->children[numOfchar] != NULL) {
         newNode = newNode->children[numOfchar];
+        MAXcounterForWord++;
 
     } else {
         node *Node = (node *) malloc(sizeof(node));
+        if (Node==NULL){
+            printf("Error allocating memory! \n");
+            exit(1);
+        }
         Node->letter = c;
         int i;
         for (i = 0; i <= NUM_LETTERS; ++i) {
@@ -121,42 +141,32 @@ void insert_to_trie(char c) {
         Node->endOfWord = 0;
         Node->endOfWordCount = 0;
         newNode = Node;
+        MAXcounterForWord++;
     }
 }
 
-void print_trie(node *Node, char *String) {
+void print_trie(node *Node, char David[MAX],int index) {
     int j;
-
     if (Node == NULL) {
         return;
     }
     for (j = 0; j < NUM_LETTERS; ++j) {
         if (Node->children[j] != NULL) {
-
-            String = (char *) realloc(String, sizeof(char) * (letterCount + 1));
-            *(String + letterCount) = Node->children[j]->letter;
-            letterCount += 1;
+            David[index] = Node->children[j]->letter;
             if (Node->children[j]->endOfWord) {
-                printf("%.*s %d\n", letterCount, String, Node->children[j]->endOfWordCount);
+                David[index+1] = '\0';
+                printf("%s %d\n", David, Node->children[j]->endOfWordCount);
                 Node->children[j]->endOfWord = 0;
-                char *newString = (char *) malloc(sizeof(char) * (letterCount - 1));
-                //strcpy(newString,String);
-                memcpy(newString, String, letterCount - 1);
-                String = "\0";
-
-                //String = (char *)realloc(sizeof(char)*(letterCount+1));
-                print_trie(Node->children[j], newString);
-                letterCount -= 1;
+                print_trie(Node->children[j], David , (index+1));
             } else {
-                print_trie(Node->children[j], String);
-                letterCount -= 1;
+                print_trie(Node->children[j], David, index+1);
             }
         }
     }
 
 }
 
-void print_trie_r(node *Node, char *String) {
+void print_trie_r(node *Node, char David[MAX],int index) {
     int j;
 
     if (Node == NULL) {
@@ -164,28 +174,49 @@ void print_trie_r(node *Node, char *String) {
     }
     for (j = NUM_LETTERS - 1; j >= 0; --j) {
         if (Node->children[j] != NULL) {
-
-            String = (char *) realloc(String, sizeof(char) * (letterCount + 1));
-            *(String + letterCount) = Node->children[j]->letter;
-            letterCount += 1;
+            David[index] = Node->children[j]->letter;
             if (Node->children[j]->endOfWord) {
-                printf("%.*s %d\n", letterCount, String, Node->children[j]->endOfWordCount);
+                David[index+1] = '\0';
+                printf("%s %d\n", David, Node->children[j]->endOfWordCount);
                 Node->children[j]->endOfWord = 0;
-                char *newString = (char *) malloc(sizeof(char) * (letterCount - 1));
-                //strcpy(newString,String);
-                memcpy(newString, String, letterCount - 1);
-                String = "\0";
-
-                //String = (char *)realloc(sizeof(char)*(letterCount+1));
-                print_trie_r(Node->children[j], newString);
-                letterCount -= 1;
+                print_trie_r(Node->children[j], David , (index+1));
             } else {
-                print_trie_r(Node->children[j], String);
-                letterCount -= 1;
+                print_trie_r(Node->children[j], David, index+1);
             }
         }
     }
 
 }
 
+void ifree(node *root) {
+    if (root != NULL) {
+        int i;
+        for (i = 0; i < NUM_LETTERS; ++i) {
+            if (root->children[i] != NULL) {
+                ifree(root->children[i]);
+                root->children[i] = NULL;
+                free(root->children[i]);
+            }
+        }
+        free(root);
+
+
+    }
+
+
+}
+
+void free_mem(node **Node) {
+    if (*Node != NULL) {
+        for (int i = 0; i < NUM_LETTERS; i++) {
+            if ((*Node)->children[i] != NULL) {
+                free_mem(&((*Node)->children[i]));
+            } else {
+                continue;
+            }
+        }
+        free(*Node);
+    }
+
+}
 
